@@ -8,57 +8,60 @@
   <style>
     :root{
       --bg:#1e1e1e; --panel:#242424; --line:#3a3a3a; --muted:#bfbfbf; --text:#f1f1f1;
-      --primary:#00c896; --danger:#ff4d4f; --blue:#6c8cff; --yellow:#e9b949;
+      --primary:#00c896; --danger:#ff4d4f; --blue:#6c8cff; --cyan:#2dd4bf;
     }
     *{ box-sizing:border-box } html,body{ height:100% }
     body{ margin:0; padding:clamp(.75rem,2vw,1.25rem);
       padding-bottom:calc(clamp(.75rem,2vw,1.25rem) + env(safe-area-inset-bottom,0px));
       font-family:'Kanit',sans-serif; background:var(--bg); color:var(--text) }
-    .wrap{ width:min(900px,100%); margin:auto; background:var(--panel); border:1px solid var(--line);
+    .wrap{ width:min(1080px,100%); margin:auto; background:var(--panel); border:1px solid var(--line);
       border-radius:20px; padding:clamp(1rem,2.2vw,1.5rem) }
-    h1{ margin:.25rem 0 1rem; font-size:clamp(1.25rem,4.5vw,1.6rem); color:var(--primary); text-align:center }
-    .row{ display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem }
-    .col{ flex:1 1 46%; min-width:230px; display:flex; flex-direction:column; gap:.35rem }
-    label{ color:var(--muted) }
-    input,select,button,textarea{ border-radius:12px; border:1px solid var(--line); background:#1d1d1d; color:#fff; min-height:44px; padding:.9rem 1rem; font-size:16px }
-    input[type=number]{ text-align:right; -moz-appearance:textfield }
-    input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-    textarea{ min-height:44px; height:44px; resize:vertical }
-    button{ background:var(--primary); border:none; font-weight:700; cursor:pointer }
-    button:disabled{ opacity:.6; cursor:not-allowed }
-    .btn-ghost{ background:#333 }
-    .btn-danger{ background:var(--danger) }
-    .btn-warn{ background:var(--yellow); color:#222 }
-    .card{ background:#1f1f1f; border:1px solid var(--line); border-radius:16px; padding:1rem }
-    .muted{ color:var(--muted) }
-    #toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:#333; color:#fff; padding:.6rem .9rem; border-radius:10px; opacity:0; transition:.3s; pointer-events:none; z-index:60 }
-    .foot{ display:flex; gap:.6rem; justify-content:flex-end; margin-top:.5rem }
-    .hide{ display:none }
-    .head{ display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem }
+    h1{ margin:.25rem 0 1rem; font-size:clamp(1.25rem,4.5vw,1.8rem); color:var(--primary); text-align:center }
+    .head{ display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem }
     .head .you{ margin-left:auto; color:#9fe9d4; font-weight:600 }
-    .tabs{ display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:.75rem }
-    .tab{ padding:.55rem .9rem; border-radius:999px; background:#2a2a2a; border:1px solid var(--line); cursor:pointer; user-select:none }
-    .tab[aria-selected="true"]{ background:var(--blue) }
-    .grid{ display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) }
 
-    /* debts table */
-    table{ width:100%; border-collapse:collapse; font-size:15px }
-    th,td{ border-bottom:1px solid var(--line); padding:.55rem .5rem; text-align:left; vertical-align:middle }
-    th{ color:var(--muted); font-weight:600 }
-    td.num{ text-align:right }
-    .tag{ display:inline-block; padding:.2rem .5rem; border-radius:8px; border:1px solid var(--line); color:#ddd; font-size:.85rem }
+    .row{ display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem }
+    .col{ flex:1 1 46%; min-width:220px; display:flex; flex-direction:column; gap:.35rem }
 
-    /* Loading overlay + spinner */
-    #loading{
-      position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:999; transition:.2s;
-    }
-    #loading.hide{ opacity:0; pointer-events:none }
-    .spinner{ width:42px; height:42px; border-radius:50%; border:4px solid #3a3a3a; border-top-color:var(--primary); animation:spin 1s linear infinite }
-    .loading-text{ margin-top:.75rem; color:#ddd }
+    .card{ background:#1f1f1f; border:1px solid var(--line); border-radius:16px; padding:1rem }
+    label{ color:var(--muted) }
+    input,select,button{ border-radius:12px; border:1px solid var(--line); background:#1d1d1d; color:#fff; min-height:44px; padding:.9rem 1rem; font-size:16px }
+    input[type=number]{ -moz-appearance:textfield; text-align:right }
+    input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+    button{ background:var(--primary); border:none; font-weight:700; cursor:pointer }
+    .btn-ghost{ background:#333 } .btn-blue{ background:var(--blue) } .btn-danger{ background:var(--danger) } .btn-cyan{ background:var(--cyan); color:#052a27 }
+    button:disabled{ opacity:.6; cursor:not-allowed }
+
+    table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:.98rem }
+    th,td{ border-bottom:1px solid var(--line); padding:.8rem .5rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    th{ color:var(--muted); font-weight:600; text-align:left; position:sticky; top:0; background:#1f1f1f; z-index:1 }
+    .table-viewport{ max-height:70vh; overflow:auto; border-radius:12px; border:1px solid var(--line) }
+    .right{ text-align:right }
+    .muted{ color:var(--muted) }
+
+    /* ===== FIX: อักขระ % ให้อยู่ในกล่องเดียวและไม่ตกร่องบรรทัด ===== */
+    .rate-cell{ white-space:nowrap; overflow:visible }
+    .rate-field{ position:relative; display:inline-block; white-space:nowrap }
+    .rate-field input{ width:96px; padding-right:1.6rem; text-align:right }
+    .rate-field .suffix{ position:absolute; right:.6rem; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none }
+
+    /* overlay + toast */
+    #toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%);
+      background:#333; color:#fff; padding:.6rem .9rem; border-radius:10px; opacity:0; transition:.3s; pointer-events:none; z-index:80 }
+    #overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:90; }
+    #overlay.hide{ opacity:0; pointer-events:none }
+    .spinner{ width:48px; height:48px; border-radius:50%; border:5px solid #3a3a3a; border-top-color:#fff; animation:spin 1s linear infinite }
     @keyframes spin{ to{ transform:rotate(360deg) } }
-    button[aria-busy="true"]{ opacity:.7; pointer-events:none }
+
+    /* modal */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:120 }
+    .modal-backdrop.show{ display:flex }
+    .modal{ width:min(640px,96vw); background:#242424; border:1px solid var(--line); border-radius:16px; padding:1rem 1rem 1.25rem }
+    .modal .title{ font-weight:700; margin-bottom:.75rem }
+    .modal .actions{ display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem }
   </style>
+
+  <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
@@ -68,399 +71,190 @@
       <div class="you" id="who"></div>
     </div>
 
-    <!-- แท็บ -->
-    <div class="tabs" role="tablist" aria-label="เมนูจัดการหนี้">
-      <div class="tab" role="tab" id="tab-repay" aria-controls="panel-repay" aria-selected="true">จ่ายหนี้</div>
-      <div class="tab" role="tab" id="tab-borrow" aria-controls="panel-borrow" aria-selected="false">กู้หนี้</div>
-      <div class="tab" role="tab" id="tab-manage" aria-controls="panel-manage" aria-selected="false">เพิ่ม/แก้ไขเจ้าหนี้</div>
+    <!-- เพิ่มเจ้าหนี้ -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="muted" style="margin-bottom:.5rem">เพิ่มเจ้าหนี้</div>
+      <div class="row">
+        <div class="col"><label for="dName">ชื่อเจ้าหนี้</label><input id="dName" placeholder="เช่น บัตร X / เพื่อน A"></div>
+        <div class="col"><label for="dRate">อัตราดอกเบี้ย/ปี (%)</label><input id="dRate" type="number" step="0.01" placeholder="เช่น 18"></div>
+        <div class="col"><label for="dPrincipal">ยอดตั้งต้น (ไม่บังคับ)</label><input id="dPrincipal" type="number" step="0.01" placeholder="เช่น 10000"></div>
+        <div class="col" style="align-self:flex-end"><button id="btnAddDebt" class="btn-blue">+ เพิ่มเจ้าหนี้</button></div>
+      </div>
     </div>
 
-    <!-- จ่ายหนี้ -->
-    <section id="panel-repay" class="card" role="tabpanel" aria-labelledby="tab-repay">
-      <div class="row">
-        <div class="col">
-          <label for="rpDebt">เลือกเจ้าหนี้</label>
-          <select id="rpDebt"></select>
-        </div>
-        <div class="col">
-          <label for="rpDate">วันที่จ่าย</label>
-          <input id="rpDate" type="date" />
-        </div>
-        <div class="col">
-          <label for="rpInterest">ดอกเบี้ย (บาท)</label>
-          <input id="rpInterest" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-        </div>
-        <div class="col">
-          <label for="rpPrincipal">เงินต้น (บาท)</label>
-          <input id="rpPrincipal" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-        </div>
-        <div class="col" style="min-width:100%">
-          <label for="rpNote">หมายเหตุ</label>
-          <input id="rpNote" placeholder="ไม่บังคับ" />
-        </div>
+    <!-- รายการเจ้าหนี้ -->
+    <div class="card">
+      <div class="muted" style="margin-bottom:.5rem">รายการเจ้าหนี้ของคุณ</div>
+      <div class="table-viewport">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:220px">เจ้าหนี้</th>
+              <th class="right" style="width:140px">คงเหลือ</th>
+              <th class="right" style="width:160px">ดอกเบี้ย/ปี</th>
+              <th style="width:120px">สถานะ</th>
+              <th style="width:210px">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="tblDebts"></tbody>
+        </table>
       </div>
-      <div class="foot">
-        <button id="btnRepay">บันทึกการจ่ายหนี้</button>
-      </div>
-    </section>
+      <div class="muted" style="margin-top:.5rem">* อัปเดต/ปิดบัญชีจากปุ่มด้านขวา</div>
+    </div>
+  </div>
 
-    <!-- กู้หนี้ -->
-    <section id="panel-borrow" class="card hide" role="tabpanel" aria-labelledby="tab-borrow">
+  <!-- แก้ไขเจ้าหนี้ -->
+  <div id="editDebtBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editDebtTitle">
+      <div id="editDebtTitle" class="title">แก้ไขเจ้าหนี้</div>
+      <input id="editDebtId" type="hidden">
       <div class="row">
+        <div class="col"><label for="editDebtName">ชื่อเจ้าหนี้</label><input id="editDebtName" placeholder="เช่น บัตร X / เพื่อน A"></div>
         <div class="col">
-          <label for="brDebt">กู้จากเจ้า</label>
-          <select id="brDebt"></select>
-        </div>
-        <div class="col">
-          <label for="brDate">วันที่กู้</label>
-          <input id="brDate" type="date" />
-        </div>
-        <div class="col">
-          <label for="brAmount">จำนวนเงินกู้ (บาท)</label>
-          <input id="brAmount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-        </div>
-        <div class="col" style="min-width:100%">
-          <label for="brNote">หมายเหตุ</label>
-          <input id="brNote" placeholder="ไม่บังคับ" />
+          <label for="editDebtRate">อัตราดอกเบี้ย/ปี</label>
+          <div class="rate-field"><input id="editDebtRate" type="number" step="0.01" placeholder="0.00"><span class="suffix">%</span></div>
         </div>
       </div>
-      <div class="foot">
-        <button id="btnBorrow">บันทึกการกู้เงิน</button>
+      <div class="actions">
+        <button id="btnEditDebtCancel" class="btn-ghost">ยกเลิก</button>
+        <button id="btnEditDebtSave" class="btn-cyan">บันทึก</button>
       </div>
-    </section>
-
-    <!-- เพิ่ม/แก้ไขเจ้าหนี้ -->
-    <section id="panel-manage" class="card hide" role="tabpanel" aria-labelledby="tab-manage">
-      <h3 style="margin:0 0 .75rem; font-size:1.05rem; color:#9fe9d4">เพิ่มเจ้าหนี้ใหม่</h3>
-      <div class="row">
-        <div class="col">
-          <label for="crName">ชื่อเจ้าหนี้</label>
-          <input id="crName" placeholder="เช่น บัตร X, เพื่อน A" />
-        </div>
-        <div class="col">
-          <label for="crRate">อัตราดอกเบี้ย</label>
-          <input id="crRate" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-        </div>
-        <div class="col">
-          <label for="crRateUnit">หน่วยดอกเบี้ย</label>
-          <select id="crRateUnit">
-            <option value="year">ต่อปี (%)</option>
-            <option value="month">ต่อเดือน (%)</option>
-          </select>
-        </div>
-        <div class="col">
-          <label for="crPrincipal">ยอดหนี้ตั้งต้น (บาท)</label>
-          <input id="crPrincipal" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
-        </div>
-        <div class="col">
-          <label for="crStart">วันที่เริ่มนับ</label>
-          <input id="crStart" type="date" />
-        </div>
-      </div>
-      <div class="foot">
-        <button id="btnCreate">เพิ่มเจ้าหนี้</button>
-      </div>
-
-      <div class="row" style="margin-top:1rem">
-        <div class="col" style="min-width:100%">
-          <div class="muted" style="margin-bottom:.4rem">รายการเจ้าหนี้ของคุณ</div>
-          <div class="card" style="padding:.25rem">
-            <div id="debtsBox"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
 
   <div id="toast">แจ้งเตือน</div>
-
-  <!-- Overlay โหลดทั้งหน้า -->
-  <div id="loading" aria-live="polite" aria-busy="true">
-    <div class="spinner"></div>
-    <div class="loading-text">กำลังโหลด…</div>
-  </div>
+  <div id="overlay" class="hide" aria-live="polite" aria-busy="true"><div class="spinner"></div></div>
 
 <script>
-/** ====== CONFIG ====== */
+/** ===== CONFIG ===== */
 const LIFF_ID = '2008276151-1g5alK2l';
 const API_URL = 'https://script.google.com/macros/s/AKfycbxV3xOU1kQM86jUJtfer8hW_HgYkcLfpH942saPVbCZ1RDmN_4LYjpk72OxdKKLQAFt/exec';
 
-/** ====== STATE ====== */
+/** ===== STATE ===== */
 let token = localStorage.getItem('fin_token') || '';
 let displayName = localStorage.getItem('fin_name') || '';
-let debts = []; // from debts/list
+let debtsCache = [];
 
-/** ====== HELPERS ====== */
+/** ===== HELPERS ===== */
 const $ = s => document.querySelector(s);
-const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const todayISO = () => fmtDate(new Date());
-function toast(msg, ok=true){
-  const el = $('#toast'); el.textContent = msg;
-  el.style.background = ok ? '#00c896' : '#ff4d4f';
-  el.style.opacity = '1'; setTimeout(()=> el.style.opacity='0', 2200);
-}
-function showOverlay(on){
-  const el = $('#loading');
-  el.classList.toggle('hide', !on);
-  el.setAttribute('aria-busy', on ? 'true' : 'false');
-}
-async function withOverlay(fn){
-  showOverlay(true);
-  try{ return await fn(); } finally{ showOverlay(false); }
-}
-function setBusy(btn, on, textWhileBusy){
-  if (!btn) return;
-  if (on){
-    btn.dataset._text = btn.textContent;
-    if (textWhileBusy) btn.textContent = textWhileBusy;
-    btn.disabled = true;
-    btn.setAttribute('aria-busy','true');
-  }else{
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
-    if (btn.dataset._text){ btn.textContent = btn.dataset._text; delete btn.dataset._text; }
-  }
-}
+const fmt = n => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2, maximumFractionDigits:2});
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const toast = (m,ok=true)=>{ const el=$('#toast'); el.textContent=m; el.style.background=ok?'#00c896':'#ff4d4f'; el.style.opacity='1'; setTimeout(()=> el.style.opacity='0', 2200); };
+const showOverlay = on => $('#overlay').classList.toggle('hide', !on);
+
+/** ===== API ===== */
 async function fetchJSON(url, options={}){
   try{
-    const res = await fetch(url, { ...options, headers: {'Content-Type':'text/plain;charset=utf-8', ...(options.headers||{})} });
-    const text = await res.text();
-    try { return JSON.parse(text); } catch{ return { ok:false, error:'NON_JSON', raw:text }; }
-  }catch(e){ return { ok:false, error:'NETWORK', message:String(e&&e.message||e) }; }
+    const res = await fetch(url, { ...options, headers:{'Content-Type':'text/plain;charset=utf-8', ...(options.headers||{})} });
+    const t = await res.text();
+    try{ return JSON.parse(t); }catch{ return { ok:false, error:'NON_JSON', raw:t }; }
+  }catch(e){ return { ok:false, error:'NETWORK', message:String(e?.message||e) }; }
 }
-async function api(path, payload={}, useToken=true){
-  const body = { path, payload };
-  if (useToken && token) body.token = token;
-  return fetchJSON(API_URL, { method:'POST', body: JSON.stringify(body) });
-}
-function normalizeMoney(v){
-  const n = Number(v); if (!isFinite(n) || n <= 0) return NaN;
-  return Math.round(n*100)/100;
-}
-function numberOrZero(v){
-  const n = Number(v); return (isFinite(n) && n >= 0) ? Math.round(n*100)/100 : 0;
+async function api(path, payload={}, useToken=true, withOverlay=false){
+  const body = { path, payload }; if (useToken && token) body.token = token;
+  if (withOverlay) showOverlay(true);
+  try{ return await fetchJSON(API_URL, { method:'POST', body: JSON.stringify(body) }); }
+  finally{ if (withOverlay) showOverlay(false); }
 }
 
-/** ====== LIFF ====== */
+/** ===== LIFF ===== */
 async function ensureTokenViaLIFF(){
   await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()){
-    liff.login({ redirectUri: location.href });
-    return false;
-  }
-  let prof;
-  try{ prof = await liff.getProfile(); }
-  catch{ toast('ไม่สามารถอ่านโปรไฟล์ LINE ได้', false); return false; }
+  if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return false; }
+  let prof; try{ prof = await liff.getProfile(); }catch{ toast('อ่านโปรไฟล์ LINE ไม่ได้', false); return false; }
   const r = await api('liff/link_or_login', { line_user_id: prof.userId, display_name: prof.displayName||'' }, false);
-  if (!r.ok){ toast(r.message || 'เกิดข้อผิดพลาด', false); return false; }
-
-  if (r.need_verification){
-    $('#who').textContent = prof.displayName || '';
-    toast('ไอดีนี้ยังไม่ผูกกับบัญชีผู้ใช้', false);
-    return false; // (หน้านี้ออกแบบให้ใช้หลังผูกแล้ว)
-  }
-
+  if (!r.ok){ toast(r.message||'เกิดข้อผิดพลาด', false); return false; }
+  if (r.need_verification){ $('#who').textContent = prof.displayName||''; toast('ยังไม่ผูกบัญชี กรุณาไปผูกก่อน', false); return false; }
   token = r.token; displayName = r.display_name || prof.displayName || '';
-  localStorage.setItem('fin_token', token);
-  localStorage.setItem('fin_name', displayName);
+  localStorage.setItem('fin_token', token); localStorage.setItem('fin_name', displayName);
   $('#who').textContent = displayName;
   return true;
 }
 
-/** ====== LOAD & RENDER ====== */
-async function loadDebts(includeClosed=false){
-  const r = await api('debts/list', { include_closed: includeClosed }, true);
-  debts = r.ok ? (r.items||[]) : [];
-  renderDebtSelects();
-  renderDebtTable();
+/** ===== Debts ===== */
+async function loadDebts(){
+  const r = await api('debts/summary', {}, true, true);
+  debtsCache = r.ok ? (r.items||[]) : [];
+  renderDebts();
 }
-function renderDebtSelects(){
-  const active = debts.filter(d => d.is_active !== false && d.principal_current >= 0);
-  function fill(sel){
-    sel.innerHTML = '';
-    if (!active.length){ sel.innerHTML = '<option value="">— ไม่มีเจ้าหนี้ —</option>'; return; }
-    for (const d of active){
-      const o = document.createElement('option');
-      o.value = d.debt_id;
-      const rate = Number(d.annual_rate||0);
-      o.textContent = `${d.lender_name} · ${rate}%/ปี · คงเหลือ ${Number(d.principal_current||0).toLocaleString()}`;
-      sel.appendChild(o);
-    }
-  }
-  fill($('#rpDebt'));
-  fill($('#brDebt'));
-}
-function renderDebtTable(){
-  const box = $('#debtsBox');
-  if (!debts.length){
-    box.innerHTML = '<div class="muted" style="padding:.6rem">ยังไม่มีเจ้าหนี้</div>';
+function renderDebts(){
+  const tb = $('#tblDebts'); tb.innerHTML='';
+  if (!debtsCache.length){
+    tb.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center">ยังไม่มีหนี้</td></tr>';
     return;
   }
-  let html = '<div style="overflow:auto"><table><thead><tr><th>ชื่อเจ้าหนี้</th><th class="num">คงเหลือ</th><th class="num">ดอกเบี้ย/ปี</th><th>สถานะ</th><th style="width:1%"></th></tr></thead><tbody>';
-  for (const d of debts){
-    html += `<tr data-id="${d.debt_id}">
-      <td><input class="edit-name" value="${(d.lender_name||'').replace(/"/g,'&quot;')}" /></td>
-      <td class="num">${Number(d.principal_current||0).toLocaleString()}</td>
-      <td class="num"><input class="edit-rate" type="number" step="0.01" inputmode="decimal" value="${Number(d.annual_rate||0)}" style="width:110px" /> %</td>
-      <td>${d.is_active!==false ? '<span class="tag">ใช้งาน</span>' : '<span class="tag">ปิดบัญชี</span>'}</td>
-      <td style="white-space:nowrap; text-align:right">
-        <button class="btn-warn btn-update" data-id="${d.debt_id}">แก้ไข</button>
-        ${d.is_active!==false ? `<button class="btn-danger btn-close" data-id="${d.debt_id}">ปิดบัญชี</button>` : ''}
+  for (const d of debtsCache){
+    const tr = document.createElement('tr');
+    const status = (d.is_closed)?'ปิดบัญชี':'ใช้งาน';
+    tr.innerHTML = `
+      <td>${esc(d.lender_name||'')}</td>
+      <td class="right">${fmt(d.total_due ?? (Number(d.principal_current||0)+Number(d.accrued_interest||0)))}</td>
+      <td class="right rate-cell">
+        <div class="rate-field">
+          <input value="${esc(Number(d.annual_rate||0))}" readonly>
+          <span class="suffix">%</span>
+        </div>
       </td>
-    </tr>`;
-  }
-  html += '</tbody></table></div>';
-  box.innerHTML = html;
-
-  // bind row actions
-  box.querySelectorAll('.btn-update').forEach(b => b.addEventListener('click', onUpdateDebt));
-  box.querySelectorAll('.btn-close').forEach(b => b.addEventListener('click', onCloseDebt));
-}
-
-/** ====== EVENTS: repay / borrow ====== */
-async function onRepay(ev){
-  const btn = ev.currentTarget;
-  const debt_id = $('#rpDebt').value;
-  const date = $('#rpDate').value;
-  const interest_paid = numberOrZero($('#rpInterest').value);
-  const principal_paid = numberOrZero($('#rpPrincipal').value);
-  const note = $('#rpNote').value.trim();
-
-  if (!debt_id){ toast('เลือกเจ้าหนี้', false); return; }
-  if (!date){ toast('กรุณาเลือกวันที่', false); return; }
-  if (interest_paid<=0 && principal_paid<=0){ toast('กรอกดอกเบี้ยหรือเงินต้นอย่างน้อย 1 ช่อง', false); return; }
-
-  setBusy(btn, true, 'กำลังบันทึก…');
-  const r = await api('debts/repay', { debt_id, date, interest_paid, principal_paid, note }, true);
-  setBusy(btn, false);
-  if (r.ok){
-    toast('บันทึกการจ่ายหนี้สำเร็จ');
-    $('#rpInterest').value=''; $('#rpPrincipal').value=''; $('#rpNote').value='';
-    await withOverlay(async ()=> loadDebts(false));
-  }else{
-    toast(r.message || 'บันทึกไม่สำเร็จ', false);
+      <td>${status}</td>
+      <td>
+        <div style="display:flex; gap:.5rem">
+          <button class="btn-ghost" data-act="edit"  data-id="${esc(d.debt_id)}">แก้ไข</button>
+          <button class="btn-danger" data-act="close" data-id="${esc(d.debt_id)}">${d.is_closed?'เปิดใหม่':'ปิดบัญชี'}</button>
+        </div>
+      </td>`;
+    tb.appendChild(tr);
   }
 }
-async function onBorrow(ev){
-  const btn = ev.currentTarget;
-  const debt_id = $('#brDebt').value;
-  const date = $('#brDate').value;
-  const amount = normalizeMoney($('#brAmount').value);
-  const note = $('#brNote').value.trim();
-
-  if (!debt_id){ toast('เลือกเจ้าหนี้', false); return; }
-  if (!date){ toast('กรุณาเลือกวันที่', false); return; }
-  if (isNaN(amount)){ toast('จำนวนเงินไม่ถูกต้อง', false); return; }
-
-  setBusy(btn, true, 'กำลังบันทึก…');
-  const r = await api('debts/borrow', { debt_id, date, amount, note }, true);
-  setBusy(btn, false);
-  if (r.ok){
-    toast('บันทึกการกู้สำเร็จ');
-    $('#brAmount').value=''; $('#brNote').value='';
-    await withOverlay(async ()=> loadDebts(false));
-  }else{
-    toast(r.message || 'บันทึกไม่สำเร็จ', false);
+$('#tblDebts').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-act]'); if (!btn) return;
+  const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
+  if (act==='edit'){ openDebtEdit(id); }
+  if (act==='close'){
+    const doClose = confirm(btn.textContent.includes('ปิด') ? 'ยืนยันปิดบัญชีหนี้นี้?' : 'ยืนยันเปิดบัญชีนี้อีกครั้ง?');
+    if (!doClose) return;
+    const r = await api('debts/close', { debt_id:id }, true, true);
+    if (r.ok){ toast('อัปเดตสถานะสำเร็จ'); loadDebts(); } else toast(r.message||'ไม่สำเร็จ', false);
   }
+});
+
+/** เพิ่มเจ้าหนี้ใหม่ */
+$('#btnAddDebt').addEventListener('click', async ()=>{
+  const lender_name = $('#dName').value.trim();
+  const annual_rate = Number($('#dRate').value||0);
+  const principal_initial = Number($('#dPrincipal').value||0);
+  if (!lender_name || !isFinite(annual_rate) || annual_rate<0){ toast('กรอกชื่อและอัตราดอกให้ถูกต้อง', false); return; }
+  const payload = { lender_name, annual_rate, principal_initial: isFinite(principal_initial)&&principal_initial>0? principal_initial:0 };
+  const r = await api('debts/create', payload, true, true);
+  if (r.ok){ toast('เพิ่มเจ้าหนี้สำเร็จ'); $('#dName').value=''; $('#dRate').value=''; $('#dPrincipal').value=''; loadDebts(); }
+  else toast(r.message||'ไม่สำเร็จ', false);
+});
+
+/** ===== Edit modal ===== */
+function openDebtEdit(id){
+  const d = debtsCache.find(x=> String(x.debt_id)===String(id));
+  if (!d){ toast('ไม่พบเจ้าหนี้', false); return; }
+  $('#editDebtId').value   = d.debt_id;
+  $('#editDebtName').value = d.lender_name || '';
+  $('#editDebtRate').value = Number(d.annual_rate||0);
+  $('#editDebtBackdrop').classList.add('show'); $('#editDebtBackdrop').setAttribute('aria-hidden','false');
 }
+function closeDebtEdit(){ $('#editDebtBackdrop').classList.remove('show'); $('#editDebtBackdrop').setAttribute('aria-hidden','true'); }
+$('#btnEditDebtCancel').addEventListener('click', closeDebtEdit);
+$('#btnEditDebtSave').addEventListener('click', async ()=>{
+  const id = $('#editDebtId').value;
+  const name = $('#editDebtName').value.trim();
+  const rate = Number($('#editDebtRate').value);
+  if (!id || !name || !isFinite(rate) || rate<0){ toast('ข้อมูลไม่ถูกต้อง', false); return; }
+  const r = await api('debts/update', { debt_id:id, lender_name:name, annual_rate:Math.round(rate*100)/100 }, true, true);
+  if (r.ok){ toast('บันทึกสำเร็จ'); closeDebtEdit(); loadDebts(); } else toast(r.message||'อัปเดตไม่สำเร็จ', false);
+});
 
-/** ====== EVENTS: creditor CRUD ====== */
-function annualFromInput(rate, unit){
-  const v = Number(rate||0);
-  if (!isFinite(v) || v<0) return NaN;
-  return unit==='month' ? Math.round(v*12*100)/100 : Math.round(v*100)/100;
-}
-async function onCreateCreditor(ev){
-  const btn = ev.currentTarget;
-  const lender_name = $('#crName').value.trim();
-  const rateInput = $('#crRate').value;
-  const unit = $('#crRateUnit').value; // year | month
-  const annual_rate = annualFromInput(rateInput, unit);
-  const principal_initial = numberOrZero($('#crPrincipal').value);
-  const start_date = $('#crStart').value || todayISO();
-
-  if (!lender_name){ toast('ใส่ชื่อเจ้าหนี้', false); return; }
-  if (isNaN(annual_rate)){ toast('อัตราดอกเบี้ยไม่ถูกต้อง', false); return; }
-
-  setBusy(btn, true, 'กำลังเพิ่ม…');
-  const r = await api('debts/create', { lender_name, annual_rate, principal_initial, start_date }, true);
-  setBusy(btn, false);
-  if (r.ok){
-    toast('เพิ่มเจ้าหนี้แล้ว');
-    $('#crName').value=''; $('#crRate').value=''; $('#crPrincipal').value='';
-    await withOverlay(async ()=> loadDebts(false));
-  }else{
-    toast(r.message || 'ทำรายการไม่สำเร็จ', false);
-  }
-}
-async function onUpdateDebt(ev){
-  const btn = ev.currentTarget;
-  const tr = btn.closest('tr');
-  const debt_id = btn.dataset.id;
-  const lender_name = tr.querySelector('.edit-name').value.trim();
-  const annual_rate = Number(tr.querySelector('.edit-rate').value);
-  if (!lender_name){ toast('ชื่อเจ้าหนี้ว่าง', false); return; }
-  if (!isFinite(annual_rate) || annual_rate<0){ toast('ดอกเบี้ยไม่ถูกต้อง', false); return; }
-
-  setBusy(btn, true, 'กำลังอัปเดต…');
-  const r = await api('debts/update', { debt_id, lender_name, annual_rate }, true);
-  setBusy(btn, false);
-  if (r.ok){
-    toast('บันทึกการแก้ไขแล้ว');
-    await withOverlay(async ()=> loadDebts(true));
-  }else{
-    toast(r.message || 'อัปเดตไม่สำเร็จ', false);
-  }
-}
-async function onCloseDebt(ev){
-  const btn = ev.currentTarget;
-  const debt_id = btn.dataset.id;
-  if (!confirm('ยืนยันปิดบัญชีหนี้รายการนี้?')) return;
-
-  setBusy(btn, true, 'กำลังปิดบัญชี…');
-  const r = await api('debts/close', { debt_id }, true);
-  setBusy(btn, false);
-  if (r.ok){
-    toast('ปิดบัญชีแล้ว');
-    await withOverlay(async ()=> loadDebts(true));
-  }else{
-    toast(r.message || 'ทำรายการไม่สำเร็จ', false);
-  }
-}
-
-/** ====== TABS ====== */
-function switchTab(id){
-  const tabs = [['tab-repay','panel-repay'],['tab-borrow','panel-borrow'],['tab-manage','panel-manage']];
-  tabs.forEach(([tid,pid])=>{
-    const on = (tid===id);
-    $('#'+tid).setAttribute('aria-selected', on?'true':'false');
-    $('#'+pid).classList.toggle('hide', !on);
-  });
-}
-$('#tab-repay').addEventListener('click', ()=> switchTab('tab-repay'));
-$('#tab-borrow').addEventListener('click', ()=> switchTab('tab-borrow'));
-$('#tab-manage').addEventListener('click', ()=> switchTab('tab-manage'));
-
-/** ====== BIND BUTTONS ====== */
-$('#btnRepay').addEventListener('click', onRepay);
-$('#btnBorrow').addEventListener('click', onBorrow);
-$('#btnCreate').addEventListener('click', onCreateCreditor);
-
-/** ====== INIT ====== */
+/** ===== INIT ===== */
 (async function init(){
-  // default dates
-  $('#rpDate').value = todayISO();
-  $('#brDate').value = todayISO();
-  $('#crStart').value = todayISO();
-
-  await withOverlay(async ()=>{
-    let ok = false;
-    try{ ok = await ensureTokenViaLIFF(); }
-    catch(e){ console.error(e); toast('เริ่มต้นผ่าน LIFF ไม่สำเร็จ', false); }
-    if (ok){
-      await loadDebts(false);
-    }
-  });
+  showOverlay(true);
+  let ok=false; try{ ok = await ensureTokenViaLIFF(); }catch(e){ console.error(e); toast('เริ่มต้น LIFF ไม่สำเร็จ', false); }
+  if (ok) await loadDebts();
+  showOverlay(false);
 })();
 </script>
 </body>
