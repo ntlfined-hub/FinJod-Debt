@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>FIN-JOD · จัดการหนี้</title>
+  <title>FIN-JOD · จัดการหนี้ (ปุ่มมีสถานะกำลังโหลด)</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -28,9 +28,17 @@
     input,select,button{ border-radius:12px; border:1px solid var(--line); background:#1d1d1d; color:#fff; min-height:44px; padding:.9rem 1rem; font-size:16px }
     input[type=number]{ -moz-appearance:textfield; text-align:right }
     input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-    button{ background:var(--primary); border:none; font-weight:700; cursor:pointer }
+    button{ background:var(--primary); border:none; font-weight:700; cursor:pointer; position:relative }
     .btn-ghost{ background:#333 } .btn-blue{ background:var(--blue) } .btn-danger{ background:var(--danger) } .btn-cyan{ background:var(--cyan); color:#052a27 }
     button:disabled{ opacity:.6; cursor:not-allowed }
+
+    /* ปุ่มกำลังโหลด: วงกลมเล็กด้านขวา */
+    button[aria-busy="true"]{ pointer-events:none }
+    button[aria-busy="true"]::after{
+      content:""; position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:18px; height:18px; border-radius:50%;
+      border:3px solid #3a3a3a; border-top-color:#fff; animation:spin 1s linear infinite;
+    }
 
     table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:.98rem }
     th,td{ border-bottom:1px solid var(--line); padding:.8rem .5rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
@@ -39,13 +47,13 @@
     .right{ text-align:right }
     .muted{ color:var(--muted) }
 
-    /* ===== FIX: อักขระ % ให้อยู่ในกล่องเดียวและไม่ตกร่องบรรทัด ===== */
+    /* ช่อง % */
     .rate-cell{ white-space:nowrap; overflow:visible }
     .rate-field{ position:relative; display:inline-block; white-space:nowrap }
     .rate-field input{ width:96px; padding-right:1.6rem; text-align:right }
     .rate-field .suffix{ position:absolute; right:.6rem; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none }
 
-    /* overlay + toast */
+    /* toast + overlay(init เท่านั้น) */
     #toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%);
       background:#333; color:#fff; padding:.6rem .9rem; border-radius:10px; opacity:0; transition:.3s; pointer-events:none; z-index:80 }
     #overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:90; }
@@ -78,7 +86,10 @@
         <div class="col"><label for="dName">ชื่อเจ้าหนี้</label><input id="dName" placeholder="เช่น บัตร X / เพื่อน A"></div>
         <div class="col"><label for="dRate">อัตราดอกเบี้ย/ปี (%)</label><input id="dRate" type="number" step="0.01" placeholder="เช่น 18"></div>
         <div class="col"><label for="dPrincipal">ยอดตั้งต้น (ไม่บังคับ)</label><input id="dPrincipal" type="number" step="0.01" placeholder="เช่น 10000"></div>
-        <div class="col" style="align-self:flex-end"><button id="btnAddDebt" class="btn-blue">+ เพิ่มเจ้าหนี้</button></div>
+        <div class="col" style="align-self:flex-end; display:flex; gap:.5rem">
+          <button id="btnReload" class="btn-ghost" title="รีเฟรชรายการ">รีเฟรชรายการ</button>
+          <button id="btnAddDebt" class="btn-blue">+ เพิ่มเจ้าหนี้</button>
+        </div>
       </div>
     </div>
 
@@ -96,7 +107,9 @@
               <th style="width:210px">จัดการ</th>
             </tr>
           </thead>
-          <tbody id="tblDebts"></tbody>
+          <tbody id="tblDebts">
+            <tr><td colspan="5" class="muted" style="text-align:center">ยังไม่โหลดข้อมูล</td></tr>
+          </tbody>
         </table>
       </div>
       <div class="muted" style="margin-top:.5rem">* อัปเดต/ปิดบัญชีจากปุ่มด้านขวา</div>
@@ -138,9 +151,28 @@ let debtsCache = [];
 /** ===== HELPERS ===== */
 const $ = s => document.querySelector(s);
 const fmt = n => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2, maximumFractionDigits:2});
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const esc = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const toast = (m,ok=true)=>{ const el=$('#toast'); el.textContent=m; el.style.background=ok?'#00c896':'#ff4d4f'; el.style.opacity='1'; setTimeout(()=> el.style.opacity='0', 2200); };
 const showOverlay = on => $('#overlay').classList.toggle('hide', !on);
+
+/* ปุ่ม busy เฉพาะกิจ */
+function setBusy(btn, on, tempText){
+  if (!btn) return;
+  if (on){
+    btn.dataset._text = btn.textContent;
+    if (tempText) btn.textContent = tempText;
+    btn.setAttribute('aria-busy','true');
+    btn.disabled = true;
+  }else{
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    if (btn.dataset._text){ btn.textContent = btn.dataset._text; delete btn.dataset._text; }
+  }
+}
+async function withBusy(btn, fn, textWhile='กำลังโหลด…'){
+  setBusy(btn, true, textWhile);
+  try{ return await fn(); } finally{ setBusy(btn, false); }
+}
 
 /** ===== API ===== */
 async function fetchJSON(url, options={}){
@@ -150,21 +182,39 @@ async function fetchJSON(url, options={}){
     try{ return JSON.parse(t); }catch{ return { ok:false, error:'NON_JSON', raw:t }; }
   }catch(e){ return { ok:false, error:'NETWORK', message:String(e?.message||e) }; }
 }
-async function api(path, payload={}, useToken=true, withOverlay=false){
+async function api(path, payload={}, useToken=true){
   const body = { path, payload }; if (useToken && token) body.token = token;
-  if (withOverlay) showOverlay(true);
-  try{ return await fetchJSON(API_URL, { method:'POST', body: JSON.stringify(body) }); }
-  finally{ if (withOverlay) showOverlay(false); }
+  return fetchJSON(API_URL, { method:'POST', body: JSON.stringify(body) });
 }
 
 /** ===== LIFF ===== */
+function waitForLiffReady(timeoutMs=5000){
+  return new Promise(res=>{
+    if (window.liff){ return res(true); }
+    const t0=Date.now(); const iv=setInterval(()=>{
+      if (window.liff){ clearInterval(iv); res(true); }
+      else if (Date.now()-t0>timeoutMs){ clearInterval(iv); res(false); }
+    },30);
+  });
+}
 async function ensureTokenViaLIFF(){
-  await liff.init({ liffId: LIFF_ID });
+  const okReady = await waitForLiffReady();
+  if (!okReady){ toast('LIFF ยังไม่พร้อม โปรดรีเฟรช', false); return false; }
+
+  try{ await liff.init({ liffId: LIFF_ID }); }
+  catch(e){ toast('เริ่ม LIFF ไม่สำเร็จ', false); return false; }
+
   if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return false; }
+
   let prof; try{ prof = await liff.getProfile(); }catch{ toast('อ่านโปรไฟล์ LINE ไม่ได้', false); return false; }
   const r = await api('liff/link_or_login', { line_user_id: prof.userId, display_name: prof.displayName||'' }, false);
   if (!r.ok){ toast(r.message||'เกิดข้อผิดพลาด', false); return false; }
-  if (r.need_verification){ $('#who').textContent = prof.displayName||''; toast('ยังไม่ผูกบัญชี กรุณาไปผูกก่อน', false); return false; }
+
+  if (r.need_verification){
+    $('#who').textContent = prof.displayName||'';
+    toast('ยังไม่ผูกบัญชี กรุณาไปผูกก่อน', false);
+    return false;
+  }
   token = r.token; displayName = r.display_name || prof.displayName || '';
   localStorage.setItem('fin_token', token); localStorage.setItem('fin_name', displayName);
   $('#who').textContent = displayName;
@@ -173,7 +223,9 @@ async function ensureTokenViaLIFF(){
 
 /** ===== Debts ===== */
 async function loadDebts(){
-  const r = await api('debts/summary', {}, true, true);
+  // แสดงกำลังโหลดในตาราง (ไม่ใช้ overlay)
+  $('#tblDebts').innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center">กำลังโหลด…</td></tr>';
+  const r = await api('debts/summary', {}, true);
   debtsCache = r.ok ? (r.items||[]) : [];
   renderDebts();
 }
@@ -205,29 +257,41 @@ function renderDebts(){
     tb.appendChild(tr);
   }
 }
+
+/* คลิกในตาราง: ใช้ busy เฉพาะปุ่มที่กด */
 $('#tblDebts').addEventListener('click', async (e)=>{
   const btn = e.target.closest('button[data-act]'); if (!btn) return;
   const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
-  if (act==='edit'){ openDebtEdit(id); }
+  if (act==='edit'){ openDebtEdit(id); return; }
   if (act==='close'){
-    const doClose = confirm(btn.textContent.includes('ปิด') ? 'ยืนยันปิดบัญชีหนี้นี้?' : 'ยืนยันเปิดบัญชีนี้อีกครั้ง?');
-    if (!doClose) return;
-    const r = await api('debts/close', { debt_id:id }, true, true);
+    const confirmMsg = btn.textContent.includes('ปิด') ? 'ยืนยันปิดบัญชีหนี้นี้?' : 'ยืนยันเปิดบัญชีนี้อีกครั้ง?';
+    if (!confirm(confirmMsg)) return;
+    const r = await withBusy(btn, ()=> api('debts/close', { debt_id:id }, true), 'กำลังอัปเดต…');
     if (r.ok){ toast('อัปเดตสถานะสำเร็จ'); loadDebts(); } else toast(r.message||'ไม่สำเร็จ', false);
   }
 });
 
-/** เพิ่มเจ้าหนี้ใหม่ */
-$('#btnAddDebt').addEventListener('click', async ()=>{
+/** เพิ่มเจ้าหนี้ใหม่ (busy ที่ปุ่ม) */
+$('#btnAddDebt').addEventListener('click', async (e)=>{
+  const btn = e.currentTarget;
   const lender_name = $('#dName').value.trim();
   const annual_rate = Number($('#dRate').value||0);
   const principal_initial = Number($('#dPrincipal').value||0);
   if (!lender_name || !isFinite(annual_rate) || annual_rate<0){ toast('กรอกชื่อและอัตราดอกให้ถูกต้อง', false); return; }
   const payload = { lender_name, annual_rate, principal_initial: isFinite(principal_initial)&&principal_initial>0? principal_initial:0 };
-  const r = await api('debts/create', payload, true, true);
-  if (r.ok){ toast('เพิ่มเจ้าหนี้สำเร็จ'); $('#dName').value=''; $('#dRate').value=''; $('#dPrincipal').value=''; loadDebts(); }
-  else toast(r.message||'ไม่สำเร็จ', false);
+
+  const r = await withBusy(btn, ()=> api('debts/create', payload, true), 'กำลังบันทึก…');
+  if (r.ok){
+    toast('เพิ่มเจ้าหนี้สำเร็จ');
+    $('#dName').value=''; $('#dRate').value=''; $('#dPrincipal').value='';
+    loadDebts();
+  }else{
+    toast(r.message||'ไม่สำเร็จ', false);
+  }
 });
+
+/** รีเฟรชรายการ (busy ที่ปุ่ม) */
+$('#btnReload').addEventListener('click', (e)=> withBusy(e.currentTarget, loadDebts, 'กำลังโหลด…'));
 
 /** ===== Edit modal ===== */
 function openDebtEdit(id){
@@ -240,21 +304,22 @@ function openDebtEdit(id){
 }
 function closeDebtEdit(){ $('#editDebtBackdrop').classList.remove('show'); $('#editDebtBackdrop').setAttribute('aria-hidden','true'); }
 $('#btnEditDebtCancel').addEventListener('click', closeDebtEdit);
-$('#btnEditDebtSave').addEventListener('click', async ()=>{
+$('#btnEditDebtSave').addEventListener('click', async (e)=>{
+  const btn = e.currentTarget;
   const id = $('#editDebtId').value;
   const name = $('#editDebtName').value.trim();
   const rate = Number($('#editDebtRate').value);
   if (!id || !name || !isFinite(rate) || rate<0){ toast('ข้อมูลไม่ถูกต้อง', false); return; }
-  const r = await api('debts/update', { debt_id:id, lender_name:name, annual_rate:Math.round(rate*100)/100 }, true, true);
+  const r = await withBusy(btn, ()=> api('debts/update', { debt_id:id, lender_name:name, annual_rate:Math.round(rate*100)/100 }, true), 'กำลังบันทึก…');
   if (r.ok){ toast('บันทึกสำเร็จ'); closeDebtEdit(); loadDebts(); } else toast(r.message||'อัปเดตไม่สำเร็จ', false);
 });
 
 /** ===== INIT ===== */
 (async function init(){
-  showOverlay(true);
+  showOverlay(true);  // overlay เฉพาะตอนเริ่ม LIFF
   let ok=false; try{ ok = await ensureTokenViaLIFF(); }catch(e){ console.error(e); toast('เริ่มต้น LIFF ไม่สำเร็จ', false); }
-  if (ok) await loadDebts();
   showOverlay(false);
+  if (ok) loadDebts();
 })();
 </script>
 </body>
