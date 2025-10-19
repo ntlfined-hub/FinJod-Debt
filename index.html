@@ -437,10 +437,10 @@ function renderRepayHistory(){
   }
 }
 
-/** Edit repay modal */
-function openRepayEditModal(debt_tx_id){
+/** Edit repay modal — now shows loader on the clicked button until modal appears */
+function openRepayEditModal(debt_tx_id, triggerBtn){
+  if (triggerBtn) setBusy(triggerBtn, true, 'กำลังเปิด…');
   $('#editRepayId').value = debt_tx_id;
-  // preload
   api('debts/tx/get', { tx_id: debt_tx_id }, true).then(r=>{
     if (!r.ok){ toast(r.message||'ไม่พบข้อมูล', false); return; }
     const it = r.item || r.data || {};
@@ -449,6 +449,10 @@ function openRepayEditModal(debt_tx_id){
     $('#editRepayPrincipal').value = Number(it.principal_paid||0);
     $('#editRepayNote').value = it.note || '';
     $('#editRepayBackdrop').classList.add('show'); $('#editRepayBackdrop').setAttribute('aria-hidden','false');
+  }).catch(()=>{
+    toast('โหลดข้อมูลไม่สำเร็จ', false);
+  }).finally(()=>{
+    if (triggerBtn) setBusy(triggerBtn, false);
   });
 }
 function closeRepayEditModal(){ $('#editRepayBackdrop').classList.remove('show'); $('#editRepayBackdrop').setAttribute('aria-hidden','true'); }
@@ -465,12 +469,9 @@ $('#btnEditRepaySave').addEventListener('click', async (e)=>{
   if (r.ok){ toast('บันทึกสำเร็จ'); closeRepayEditModal(); loadRepayHistory(); } else toast(r.message||'อัปเดตไม่สำเร็จ', false);
 });
 
-/** Delete repay:
- * หา Transactions ที่ผูกกับ debt_tx_id นี้ แล้วเรียก transactions/delete (GAS จะลบ DebtTx ให้ด้วย)
- */
+/** Delete repay (มีสปินเนอร์ที่ปุ่มลบเดิมอยู่แล้ว) */
 async function deleteRepay(debt_tx_id, btn){
   if (!confirm('ต้องการลบรายการจ่ายหนี้นี้หรือไม่?')) return;
-  // หา tx_id จาก transactions/list (จะมี field debt_tx_id)
   const rTx = await withBusy(btn, ()=> api('transactions/list', { type:'all' }, true), 'กำลังลบ…');
   if (!rTx.ok){ toast('โหลดรายการเงินสดไม่สำเร็จ', false); return; }
   const linked = (rTx.items||[]).find(t => String(t.debt_tx_id||'')===String(debt_tx_id));
@@ -483,7 +484,7 @@ async function deleteRepay(debt_tx_id, btn){
 $('#tblRepay').addEventListener('click', (e)=>{
   const btn = e.target.closest('button[data-rh-act]'); if (!btn) return;
   const act = btn.getAttribute('data-rh-act'); const id = btn.getAttribute('data-debt-tx-id');
-  if (act==='edit') openRepayEditModal(id);
+  if (act==='edit') openRepayEditModal(id, btn);  // <<< pass button to show loader
   if (act==='del')  deleteRepay(id, btn);
 });
 
@@ -500,7 +501,6 @@ function activateTab(which){
   panelCreditors.classList.toggle('active', isCred);
   panelRepay.classList.toggle('active', !isCred);
   if (!isCred) {
-    // default filter = 30 วันล่าสุด เมื่อเปิดครั้งแรก
     if (!$('#rhFrom').value || !$('#rhTo').value) setRhQuick30();
     loadRepayHistory();
   }
@@ -515,7 +515,6 @@ $('#rhDebt').addEventListener('change', ()=> loadRepayHistory());
 
 /** ===== INIT ===== */
 (async function init(){
-  // ตั้งค่า default ช่วง Repay = 30 วันล่าสุด
   setRhQuick30();
 
   showOverlay(true);
@@ -524,7 +523,6 @@ $('#rhDebt').addEventListener('change', ()=> loadRepayHistory());
 
   if (ok){
     await loadDebts();
-    // เปิดเริ่มต้นที่ "เจ้าหนี้" ตามเดิม
   }
 })();
 </script>
